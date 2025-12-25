@@ -6,11 +6,11 @@ A comprehensive development infrastructure plugin for Claude Code projects. Prov
 
 | Component | Count | Description |
 |-----------|-------|-------------|
-| **Skills** | 11 | Stack-agnostic AI skills for architecture, debugging, documentation |
+| **Skills** | 13 | Stack-agnostic AI skills for architecture, debugging, documentation |
 | **Hooks** | 11 | Pre/post-tool hooks for task locking, reminders, automation |
 | **Templates** | 5 | Project scaffolding templates (MASTER_PLAN, CLAUDE.md, SOP) |
 | **Standards** | 5 | Quality and process standards documents |
-| **Dev Manager** | 1 | Kanban dashboard with MASTER_PLAN.md integration |
+| **Dev Manager** | 1 | Kanban dashboard with glass morphism design |
 
 ## Quick Start
 
@@ -28,6 +28,9 @@ npm start
 ```
 
 ## Skills Included
+
+### Getting Started
+- **plugin-overview** - Complete index of all plugin components and setup guide
 
 ### Architecture & Planning
 - **chief-architect** - Strategic development orchestrator
@@ -47,6 +50,9 @@ npm start
 - **safe-project-organizer** - Safe file organization
 - **crisis-debugging-advisor** - Emergency debugging guidance
 - **skills-manager** - Skill consolidation and management
+
+### Plugin Development
+- **plugin-creator** - Create Claude Code plugins with marketplace distribution
 
 ## Hooks Included
 
