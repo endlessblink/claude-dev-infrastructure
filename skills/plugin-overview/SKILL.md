@@ -21,9 +21,9 @@ Use this skill when you need to understand what resources are available in the c
 | **qa-testing** | Mandatory testing protocols | Before marking features complete |
 | **plugin-creator** | Create Claude Code plugins | Building distributable plugins |
 
-### Hooks (11 total)
+### Hooks (5 core + optional)
 
-Located in `hooks/` directory. Add to `.claude/settings.json`:
+Located in `hooks/` directory. Configure in `.claude/settings.json`:
 
 ```json
 {
@@ -32,6 +32,10 @@ Located in `hooks/` directory. Add to `.claude/settings.json`:
       {
         "matcher": "Edit|Write",
         "command": ".claude/hooks/task-lock-enforcer.sh"
+      },
+      {
+        "matcher": "Edit|Write",
+        "command": ".claude/hooks/validate-master-plan.sh"
       }
     ],
     "SessionStart": [
@@ -47,12 +51,17 @@ Located in `hooks/` directory. Add to `.claude/settings.json`:
 | Hook | Purpose |
 |------|---------|
 | `task-lock-enforcer.sh` | Prevents concurrent task editing across instances |
+| `validate-master-plan.sh` | **Enforces dev-manager format on every MASTER_PLAN.md edit** |
 | `session-lock-awareness.sh` | Shows active locks at session start |
 | `session-lock-release.sh` | Releases locks at session end |
-| `auto-sync-task-status.sh` | Syncs task status changes |
 | `master-plan-reminder.sh` | Reminds about MASTER_PLAN updates |
-| `check-npm-scripts.sh` | Validates npm scripts |
-| `task-disappearance-helper.sh` | Tracks mysterious data loss |
+
+**The `validate-master-plan.sh` hook automatically:**
+- Validates `## Active Work` section exists
+- Checks task header format: `### TASK-XXX: Title (STATUS)`
+- Warns about missing status keywords
+- Detects completed tasks without strikethrough
+- Provides format guide in additionalContext if issues found
 
 ### Templates (5 total)
 

@@ -13,6 +13,12 @@
       "description": "Reminds to update MASTER_PLAN.md when modifying tracked files"
     },
     {
+      "event": "PreToolUse",
+      "matcher": "Edit|Write",
+      "command": "./hooks/validate-master-plan.sh",
+      "description": "Validates MASTER_PLAN.md format for dev-manager Kanban compatibility"
+    },
+    {
       "event": "SessionStart",
       "command": "./hooks/session-lock-awareness.sh",
       "description": "Shows active task locks from other sessions at startup"
