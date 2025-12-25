@@ -3,9 +3,16 @@
  * Serves static files and provides API for editing MASTER_PLAN.md
  *
  * Configuration:
- * - Set DEV_MANAGER_ROOT env var to your project root
- * - Set DEV_MANAGER_PORT env var for custom port (default: 6010)
+ * - Create .env file with DEV_MANAGER_ROOT and DEV_MANAGER_PORT
+ * - Or set environment variables directly
  */
+
+// Load .env file if present
+try {
+  require('dotenv').config();
+} catch (e) {
+  // dotenv not installed, fall back to env vars
+}
 
 const express = require('express');
 const fs = require('fs').promises;
@@ -15,11 +22,71 @@ const cors = require('cors');
 
 const app = express();
 
-// Configuration - can be overridden via environment variables
+// Configuration - can be overridden via .env file or environment variables
 const PORT = process.env.DEV_MANAGER_PORT || 6010;
 const PROJECT_ROOT = process.env.DEV_MANAGER_ROOT || process.cwd();
 const DEV_MANAGER_DIR = __dirname;
 const MASTER_PLAN_PATH = path.join(PROJECT_ROOT, 'docs', 'MASTER_PLAN.md');
+const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'MASTER_PLAN.template.md');
+
+// Auto-create MASTER_PLAN.md from template if it doesn't exist
+async function ensureMasterPlan() {
+  try {
+    await fs.access(MASTER_PLAN_PATH);
+    console.log(`[Init] MASTER_PLAN.md found at: ${MASTER_PLAN_PATH}`);
+  } catch {
+    console.log(`[Init] MASTER_PLAN.md not found at: ${MASTER_PLAN_PATH}`);
+
+    // Ensure docs directory exists
+    const docsDir = path.dirname(MASTER_PLAN_PATH);
+    try {
+      await fs.mkdir(docsDir, { recursive: true });
+    } catch {}
+
+    // Try to copy from template
+    try {
+      await fs.access(TEMPLATE_PATH);
+      const template = await fs.readFile(TEMPLATE_PATH, 'utf-8');
+      await fs.writeFile(MASTER_PLAN_PATH, template);
+      console.log(`[Init] Created MASTER_PLAN.md from template`);
+    } catch {
+      // Create minimal MASTER_PLAN.md
+      const minimal = `# MASTER_PLAN
+
+## Active Work
+
+### TASK-001: Getting Started (PLANNED)
+
+**Priority**: P2-MEDIUM
+
+Add your tasks here following this format:
+- Use \`### TASK-XXX: Title (STATUS)\` for task headers
+- Status keywords: PLANNED, IN PROGRESS, REVIEW, DONE
+- Use \`- [x]\` checkboxes for subtasks
+
+---
+
+## Ideas
+
+- Add your ideas here
+
+## Roadmap
+
+### Near-term
+| ID | Feature | Priority | Status |
+|----|---------|----------|--------|
+| ROAD-001 | Example feature | P2 | TODO |
+
+### Later
+| ID | Feature | Notes |
+|----|---------|-------|
+| ROAD-002 | Future feature | Long term |
+`;
+      await fs.writeFile(MASTER_PLAN_PATH, minimal);
+      console.log(`[Init] Created minimal MASTER_PLAN.md (no template found)`);
+    }
+  }
+}
 
 // SSE clients for live file sync
 let sseClients = [];
@@ -332,22 +399,36 @@ function setupFileWatcher() {
 }
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`
-╔════════════════════════════════════════════════════════╗
-║           DEV MANAGER SERVER RUNNING                   ║
-╠════════════════════════════════════════════════════════╣
-║  URL: http://localhost:${PORT}                          ║
-║  API: http://localhost:${PORT}/api/master-plan          ║
-║  SSE: http://localhost:${PORT}/api/events               ║
-║                                                        ║
-║  Project Root: ${PROJECT_ROOT.substring(0, 35)}...
-║  MASTER_PLAN: ${MASTER_PLAN_PATH.substring(0, 35)}...
-║                                                        ║
-║  Editing tasks will update MASTER_PLAN.md directly    ║
-║  Live sync: Changes to MASTER_PLAN.md auto-refresh UI ║
-╚════════════════════════════════════════════════════════╝
-  `);
+async function startServer() {
+  // Ensure MASTER_PLAN.md exists (auto-create if needed)
+  await ensureMasterPlan();
 
-  setupFileWatcher();
+  app.listen(PORT, () => {
+    console.log(`
+╔════════════════════════════════════════════════════════════════════╗
+║                    DEV MANAGER SERVER RUNNING                      ║
+╠════════════════════════════════════════════════════════════════════╣
+║  URL: http://localhost:${PORT}                                        ║
+║  API: http://localhost:${PORT}/api/master-plan                        ║
+║  SSE: http://localhost:${PORT}/api/events                             ║
+║                                                                    ║
+║  Project Root: ${PROJECT_ROOT}
+║  MASTER_PLAN: ${MASTER_PLAN_PATH}
+║                                                                    ║
+║  Configure via .env file:                                          ║
+║    DEV_MANAGER_ROOT=/path/to/your/project                          ║
+║    DEV_MANAGER_PORT=6010                                           ║
+║                                                                    ║
+║  Editing tasks will update MASTER_PLAN.md directly                 ║
+║  Live sync: Changes to MASTER_PLAN.md auto-refresh UI              ║
+╚════════════════════════════════════════════════════════════════════╝
+    `);
+
+    setupFileWatcher();
+  });
+}
+
+startServer().catch(err => {
+  console.error('[Fatal] Failed to start server:', err);
+  process.exit(1);
 });

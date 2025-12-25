@@ -34,7 +34,21 @@
 
 ---
 
-### TASK-002: Plugin Auto-Update Mechanism (TODO)
+### ~~TASK-002~~: Dev-Manager Configuration & Auto-Setup (✅ DONE)
+**Priority**: P1-HIGH
+
+**Goal**: Make dev-manager easier to configure and auto-create MASTER_PLAN.md for new projects.
+
+**Implementation**:
+- [x] Added .env file support (dotenv)
+- [x] Created .env.example with configuration options
+- [x] Auto-create MASTER_PLAN.md from template if not found
+- [x] Improved startup messages with configuration hints
+- [x] Updated package.json to v1.1.0 with dotenv dependency
+
+---
+
+### TASK-003: Plugin Auto-Update Mechanism (TODO)
 **Priority**: P2-MEDIUM
 
 **Goal**: Research and document how plugin updates work for distributed plugins.
@@ -54,7 +68,7 @@
 
 ---
 
-### TASK-003: Dev-Manager Design System Integration (DONE)
+### ~~TASK-004~~: Dev-Manager Design System Integration (✅ DONE)
 **Priority**: P1-HIGH
 
 **Goal**: Redesign dev-manager Kanban dashboard to match PomoFlow's cohesive design system for unified plugin distribution.
