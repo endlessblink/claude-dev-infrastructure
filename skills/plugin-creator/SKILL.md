@@ -39,11 +39,14 @@ my-plugin/
 
 ## Plugin Manifest (plugin.json)
 
-The `.claude-plugin/plugin.json` file is **required**. Here's the complete schema:
+The `.claude-plugin/plugin.json` file is **required**.
+
+### VALIDATED FIELDS ONLY
+
+**WARNING**: The Claude Code validator is strict. Only use these validated fields:
 
 ```json
 {
-  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "my-plugin",
   "version": "1.0.0",
   "description": "Clear description of what this plugin does",
@@ -52,33 +55,47 @@ The `.claude-plugin/plugin.json` file is **required**. Here's the complete schem
     "email": "you@example.com"
   },
   "license": "MIT",
-  "commands": [
-    {
-      "name": "mycommand",
-      "description": "What this command does",
-      "source": "./commands/my-command.md"
-    }
-  ],
-  "agents": [
-    {
-      "name": "my-agent",
-      "description": "What this agent specializes in",
-      "source": "./agents/my-agent.md"
-    }
-  ],
-  "hooks": {
-    "source": "./hooks/hooks.json"
-  },
   "skills": [
     "./skills/my-skill"
-  ],
-  "mcp_servers": [
-    {
-      "name": "my-mcp",
-      "command": "npx",
-      "args": ["my-mcp-server"]
-    }
   ]
+}
+```
+
+### INVALID FIELDS (Do NOT use)
+
+These fields will cause validation errors:
+
+| Field | Error |
+|-------|-------|
+| `$schema` | Unrecognized key |
+| `category` | Unrecognized key |
+| `tags` | Unrecognized key |
+| `repository` | Unrecognized key |
+| `hooks` | Invalid input (object format rejected) |
+| `commands` | Invalid input (format may be incorrect) |
+
+### Marketplace Source Path
+
+In `marketplace.json`, the `source` field **MUST** start with `./`:
+
+```json
+"source": "./"      // ✅ Correct
+"source": "."       // ❌ Invalid - must start with ./
+```
+
+### Minimal Valid Plugin
+
+Start with this minimal structure that is guaranteed to validate:
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "What this plugin does",
+  "author": {
+    "name": "Your Name"
+  },
+  "skills": []
 }
 ```
 
