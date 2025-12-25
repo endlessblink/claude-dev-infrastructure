@@ -113,15 +113,50 @@ All work items must be tracked in `docs/MASTER_PLAN.md` with proper IDs:
 | `IDEA-XXX` | Ideas to consider | `IDEA-001: Concept` |
 | `ISSUE-XXX` | Known issues | `ISSUE-001: Limitation` |
 
-### Task Format
+### Dev-Manager Format (CRITICAL)
+
+**The dev-manager Kanban dashboard parses MASTER_PLAN.md automatically.**
+Tasks MUST use this exact format to display correctly:
+
+**Section header** (tasks must be under this):
+```markdown
+## Active Work
+```
+
+**Task header format:**
 ```markdown
 ### TASK-XXX: Task Title (STATUS)
+### ~~TASK-XXX~~: Completed Task (✅ DONE)
+```
 
+**Status keywords detected by parser:**
+
+| Kanban Column | Keywords |
+|---------------|----------|
+| **Done** | `DONE`, `COMPLETE`, `✅`, `~~strikethrough~~` |
+| **In Progress** | `IN PROGRESS`, `🔄`, `ACTIVE` |
+| **Review** | `REVIEW`, `MONITORING`, `👀` |
+| **To Do** | `PLANNED`, `TODO`, or default |
+
+**Priority format:**
+```markdown
+### TASK-XXX: Title (P1-HIGH)
 **Priority**: P2-MEDIUM
+```
 
-- [ ] Step 1
-- [ ] Step 2
+**Progress from checkboxes:**
+```markdown
+- [x] Step 1 ✅
+- [x] Step 2 ✅
 - [ ] Step 3
+```
+→ Parser shows: 67% progress (2/3 checked)
+
+**Start dev-manager:**
+```bash
+cd .claude/dev-manager  # or wherever installed
+DEV_MANAGER_ROOT=/path/to/project npm start
+# Opens at http://localhost:6010
 ```
 
 ---

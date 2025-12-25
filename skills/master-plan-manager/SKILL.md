@@ -186,6 +186,81 @@ cp docs/MASTER_PLAN.md.backup docs/MASTER_PLAN.md
 git checkout HEAD -- docs/MASTER_PLAN.md
 ```
 
+## Dev-Manager Parser Compatibility
+
+**CRITICAL**: The dev-manager Kanban dashboard (`http://localhost:6010`) parses MASTER_PLAN.md automatically. For tasks to display correctly, you MUST follow these exact formats:
+
+### Required Section Header
+
+Tasks MUST be inside an `## Active Work` section:
+```markdown
+## Active Work
+
+### TASK-001: Task Title (STATUS)
+```
+
+### Task Header Format
+
+**Active tasks:**
+```markdown
+### TASK-001: Task Title (STATUS)
+### BUG-001: Bug Description (STATUS)
+### ISSUE-001: Issue Description (STATUS)
+```
+
+**Completed tasks (with strikethrough on ID):**
+```markdown
+### ~~TASK-001~~: Task Title (✅ DONE)
+### ~~BUG-001~~: Bug Description (✅ COMPLETE)
+```
+
+### Status Keywords (Parser Detection)
+
+The parser detects these keywords in the header or body:
+
+| Kanban Column | Keywords Detected |
+|---------------|-------------------|
+| **Done** | `DONE`, `COMPLETE`, `COMPLETED`, `FIXED`, `✅`, `~~strikethrough ID~~` |
+| **In Progress** | `IN PROGRESS`, `IN_PROGRESS`, `ACTIVE`, `WORKING`, `🔄`, `⏳` |
+| **Review** | `REVIEW`, `MONITORING`, `AWAITING`, `👀` |
+| **To Do** | `PLANNED`, `TODO`, or no status keyword (default) |
+
+### Priority Format
+
+Parser detects priority from:
+```markdown
+### TASK-001: Title (P1-HIGH)
+```
+Or as a separate line:
+```markdown
+**Priority**: P1-HIGH
+```
+
+Priority levels: `P1`/`HIGH` (red), `P2`/`MEDIUM` (yellow), `P3`/`LOW` (blue)
+
+### Progress Calculation
+
+Parser calculates progress from checkbox subtasks:
+```markdown
+**Steps:**
+- [x] Step 1 completed ✅
+- [x] Step 2 completed ✅
+- [ ] Step 3 pending
+- [ ] Step 4 pending
+```
+→ Parser shows: **50% progress** (2 of 4 checked)
+
+### Common Mistakes That Break Parsing
+
+| Mistake | Correct Format |
+|---------|----------------|
+| `### TASK-001 - Title` | `### TASK-001: Title` (use colon) |
+| `## Tasks` section | `## Active Work` (exact header) |
+| `### Task 1: Title` | `### TASK-001: Title` (use TASK-XXX format) |
+| Status in body only | Status in header `(STATUS)` or body with keywords |
+
+---
+
 ## Best Practices
 
 1. **Never blindly append** - Always check if section exists
@@ -193,3 +268,4 @@ git checkout HEAD -- docs/MASTER_PLAN.md
 3. **Atomic updates** - One logical change at a time
 4. **User verification** - Ask user to confirm significant changes
 5. **Keep history** - Document why changes were made
+6. **Dev-manager compatible** - Use exact formats above for parser
