@@ -411,6 +411,214 @@ EOF
 echo "Plugin scaffolded! Edit .claude-plugin/plugin.json to add commands/agents."
 ```
 
+## Troubleshooting Guide
+
+### SSH Permission Denied Errors
+
+**Error:**
+```
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+```
+
+**Cause:** Claude Code defaults to SSH for GitHub repos, but SSH keys may not be configured.
+
+**Solutions:**
+
+1. **Use HTTPS URL format in marketplace.json:**
+```json
+"source": {
+  "source": "url",
+  "url": "https://github.com/owner/repo.git"
+}
+```
+
+2. **Add marketplace via HTTPS directly:**
+```bash
+/plugin marketplace add https://github.com/owner/marketplace-repo.git
+```
+
+3. **Use local path (most reliable):**
+```bash
+git clone https://github.com/owner/marketplace.git ~/.claude/marketplaces/mymarket
+/plugin marketplace add ~/.claude/marketplaces/mymarket
+```
+
+### Cached Old Versions
+
+**Symptoms:** Changes to marketplace.json don't take effect.
+
+**Solution:** Clear ALL caches:
+```bash
+# Clear download cache
+rm -rf ~/.claude/plugins/cache/
+
+# Force update installed marketplace
+rm -rf ~/.claude/plugins/marketplaces/your-marketplace-name/
+# Then re-add the marketplace
+```
+
+### Marketplace Schema Validation Errors
+
+**Error:** `Unrecognized key(s) in object`
+
+**Cause:** Extra fields in marketplace.json that aren't in the official schema.
+
+**Invalid fields for marketplace.json:**
+- `features`
+- `requirements`
+- `bugs`
+- Any custom fields
+
+**Valid marketplace.json structure:**
+```json
+{
+  "name": "marketplace-name",
+  "owner": {
+    "name": "Your Name"
+  },
+  "plugins": [
+    {
+      "name": "plugin-name",
+      "description": "Description",
+      "source": "./path/to/plugin"
+    }
+  ]
+}
+```
+
+### Plugin.json Validation Errors
+
+**Error:** `hooks: Invalid input, commands: Invalid input`
+
+**Cause:** The plugin.json validator rejects certain field formats.
+
+**Known invalid fields:**
+| Field | Status |
+|-------|--------|
+| `$schema` | Rejected |
+| `category` | Rejected |
+| `tags` | Rejected |
+| `repository` | Rejected |
+| `hooks` (object format) | Rejected |
+| `commands` (array format) | May be rejected |
+
+**Safe minimal plugin.json:**
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "Description",
+  "author": { "name": "Your Name" },
+  "skills": ["./skills/my-skill"]
+}
+```
+
+### Separate Marketplace from Plugin
+
+**Problem:** Having both `marketplace.json` and `plugin.json` in same `.claude-plugin/` directory causes confusion.
+
+**Solution:** Use separate repositories:
+
+**Marketplace repo:**
+```
+my-marketplace/
+├── .claude-plugin/
+│   └── marketplace.json  # Points to external plugin
+└── README.md
+```
+
+**Plugin repo:**
+```
+my-plugin/
+├── .claude-plugin/
+│   └── plugin.json       # No marketplace.json here
+├── skills/
+└── README.md
+```
+
+**marketplace.json referencing external plugin:**
+```json
+{
+  "name": "my-marketplace",
+  "owner": { "name": "Your Name" },
+  "plugins": [
+    {
+      "name": "my-plugin",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/owner/my-plugin.git"
+      }
+    }
+  ]
+}
+```
+
+### Non-GitHub Repository Issues
+
+**Problem:** Claude Code may fail with self-hosted git servers.
+
+**Correct SSH format:**
+```bash
+git@hostname:path/to/repo.git  # Use colon, not slash
+```
+
+**HTTPS alternative:**
+```bash
+https://git.example.com/path/to/repo.git
+```
+
+### Installation Hangs
+
+**Symptoms:** `/plugin marketplace add` hangs indefinitely.
+
+**Solutions:**
+1. Check internet connectivity
+2. Verify repository is public
+3. Use local path instead of remote URL
+4. Check for large files in repo (can slow clone)
+
+### Validating Before Publishing
+
+Run this checklist:
+```bash
+# 1. Validate JSON syntax
+cat .claude-plugin/plugin.json | python3 -m json.tool
+
+# 2. Check required files exist
+ls -la .claude-plugin/plugin.json
+ls -la skills/*/SKILL.md
+
+# 3. Verify source paths
+for skill in $(jq -r '.skills[]' .claude-plugin/plugin.json); do
+  [ -d "$skill" ] && echo "✓ $skill" || echo "✗ $skill MISSING"
+done
+
+# 4. Test local install
+/plugin install /path/to/my-plugin
+```
+
+### Complete Installation Flow
+
+```bash
+# Step 1: Clear all caches
+rm -rf ~/.claude/plugins/cache/
+
+# Step 2: Remove old marketplace if exists
+rm -rf ~/.claude/plugins/marketplaces/your-marketplace/
+
+# Step 3: Add marketplace (use HTTPS or local path)
+/plugin marketplace add https://github.com/owner/marketplace.git
+# OR
+/plugin marketplace add /local/path/to/marketplace
+
+# Step 4: Install plugin
+/plugin install plugin-name@marketplace-name
+
+# Step 5: Verify
+/plugin list
+```
+
 ## References
 
 - [Claude Code Plugin Docs](https://code.claude.com/docs/en/plugins)
@@ -418,3 +626,5 @@ echo "Plugin scaffolded! Edit .claude-plugin/plugin.json to add commands/agents.
 - [Agent Skills Spec](https://agentskills.io)
 - [Anthropic Skills Repo](https://github.com/anthropics/skills)
 - [Official Plugins](https://github.com/anthropics/claude-code/tree/main/plugins)
+- [GitHub Issues: SSH Auth](https://github.com/anthropics/claude-code/issues/9740)
+- [GitHub Issues: Non-GitHub Repos](https://github.com/anthropics/claude-code/issues/10403)
