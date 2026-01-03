@@ -1,25 +1,10 @@
 {
   "name": "claude-dev-infrastructure",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Comprehensive development infrastructure for Claude Code projects. Includes 13 AI skills, task coordination hooks, project templates, and a visual dev-manager dashboard with glass morphism design.",
   "author": {
     "name": "endlessblink",
     "email": "endlessblink@users.noreply.github.com"
   },
-  "license": "MIT",
-  "skills": [
-    "./skills/plugin-overview",
-    "./skills/chief-architect",
-    "./skills/master-plan-manager",
-    "./skills/meta-skill-router",
-    "./skills/skill-creator-doctor",
-    "./skills/skills-manager",
-    "./skills/ai-truthfulness-enforcer",
-    "./skills/document-sync",
-    "./skills/safe-project-organizer",
-    "./skills/data-safety-auditor",
-    "./skills/crisis-debugging-advisor",
-    "./skills/qa-testing",
-    "./skills/plugin-creator"
-  ]
+  "license": "MIT"
 }
